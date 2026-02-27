@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Filament\Resources\Farms\Pages;
+
+use App\Filament\Resources\Farms\FarmResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateFarm extends CreateRecord
+{
+    protected static string $resource = FarmResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('view', ['record' => $this->getRecord()]);
+    }
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Kandang berhasil ditambahkan';
+    }
+}
