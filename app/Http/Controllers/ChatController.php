@@ -55,7 +55,9 @@ class ChatController extends Controller
             'message' => ['required', 'string', 'max:4000'],
         ]);
 
-        $session = ChatSession::where('session_token', $token)->firstOrFail();
+        $session = ChatSession::where('session_token', $token)
+            ->with(['farm', 'chicken'])
+            ->firstOrFail();
 
         if ($session->status !== ChatSessionStatus::Active) {
             return response()->json([

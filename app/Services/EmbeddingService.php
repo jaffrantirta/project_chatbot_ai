@@ -86,37 +86,50 @@ class EmbeddingService
     /**
      * Find the top-K most similar embedded chunks for a query string.
      * Returns chunks sorted by similarity descending, filtered by threshold.
+     * Returns empty collection (without calling the API) if no chunks are embedded.
      */
     public function findSimilarChunks(string $query, int $topK = 3): \Illuminate\Database\Eloquent\Collection
     {
-        $queryVector = $this->getEmbedding($query);
+        $empty = KnowledgeChunk::whereNull('id')->get();
 
-        // Load all embedded chunks (with their vectors)
-        $chunks = KnowledgeChunk::where('is_embedded', true)
+        // Short-circuit: skip API call if nothing is embedded yet
+        $hasEmbedded = KnowledgeChunk::where('is_embedded', true)
             ->whereNotNull('embedding')
-            ->get();
+            ->exists();
 
-        if ($chunks->isEmpty()) {
-            return $chunks;
+        if (! $hasEmbedded) {
+            return $empty;
         }
 
-        // Score every chunk
-        $scored = $chunks->map(function (KnowledgeChunk $chunk) use ($queryVector) {
-            return [
-                'chunk'      => $chunk,
-                'similarity' => $this->cosineSimilarity($queryVector, $chunk->embedding),
-            ];
-        });
+        // Embed the user query
+        $queryVector = $this->getEmbedding($query);
 
-        // Filter by threshold, then take top-K
-        $results = $scored
+        // Load all embedded chunks with their vectors
+        $chunks = KnowledgeChunk::where('is_embedded', true)
+            ->whereNotNull('embedding')
+            ->with('document:id,title')
+            ->get();
+
+        // Score every chunk
+        $scored = $chunks->map(fn (KnowledgeChunk $chunk) => [
+            'chunk'      => $chunk,
+            'similarity' => $this->cosineSimilarity($queryVector, $chunk->embedding),
+        ]);
+
+        // Filter by threshold, sort, take top-K
+        $topChunks = $scored
             ->filter(fn ($item) => $item['similarity'] >= self::SIMILARITY_THRESHOLD)
             ->sortByDesc('similarity')
             ->take($topK)
             ->pluck('chunk');
 
-        // Return as Eloquent Collection
-        return KnowledgeChunk::whereIn('id', $results->pluck('id'))->get();
+        if ($topChunks->isEmpty()) {
+            return $empty;
+        }
+
+        return KnowledgeChunk::with('document:id,title')
+            ->whereIn('id', $topChunks->pluck('id'))
+            ->get();
     }
 
     // ─── Chunking ─────────────────────────────────────────────────────────────
