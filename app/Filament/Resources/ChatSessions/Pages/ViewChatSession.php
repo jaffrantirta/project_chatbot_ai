@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ChatSessions\Pages;
 
 use App\Enums\ChatSessionStatus;
+use App\Filament\Resources\ChatSessions\ChatSessionResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;

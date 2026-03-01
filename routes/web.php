@@ -3,9 +3,7 @@
 use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => redirect('/admin'));
 
 // Public chat — identified by session_token (UUID), not by DB id
 Route::prefix('chat')->group(function () {
