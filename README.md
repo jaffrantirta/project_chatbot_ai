@@ -1,59 +1,329 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Chicken Health AI Chatbot
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi chatbot berbasis AI untuk monitoring dan konsultasi kesehatan ayam. Dibangun dengan Laravel 12, Filament v5, dan React/Inertia.js.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Panel Admin** (Filament) untuk mengelola seluruh data aplikasi
+- **Knowledge Base** dengan dokumen PDF/TXT yang dapat diunggah dan di-embed sebagai vector
+- **RAG (Retrieval-Augmented Generation)** — chatbot menjawab berdasarkan dokumen yang telah di-embed
+- **System Prompt** yang dapat dikustomisasi oleh admin
+- **Manajemen Farm & Ayam** — sesi chat dapat dikaitkan dengan kandang dan ayam tertentu
+- **Catatan Kesehatan** untuk mencatat riwayat kesehatan ayam
+- **Riwayat Penyakit & Obat** sebagai referensi
+- **Halaman Chat Publik** yang dapat dibagikan via link ke pengguna/peternak
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Persyaratan Sistem
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+| Kebutuhan | Versi |
+|---|---|
+| **PHP** | >= 8.2 |
+| **Composer** | >= 2.x |
+| **Node.js** | >= 20.x |
+| **NPM** | >= 10.x |
+| **SQLite** | (sudah termasuk di PHP) |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+> **Catatan:** Pastikan ekstensi PHP berikut sudah aktif: `pdo_sqlite`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `fileinfo`, `zip`
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Instalasi
 
-### Premium Partners
+Ikuti langkah-langkah berikut secara berurutan.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 1. Clone / Ekstrak Proyek
 
-## Contributing
+```bash
+# Jika menggunakan Git
+git clone <url-repository> chatbot-ayam
+cd chatbot-ayam
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Jika menggunakan file ZIP, ekstrak lalu masuk ke foldernya
+cd chatbot-ayam
+```
 
-## Code of Conduct
+### 2. Install Dependensi PHP
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+composer install
+```
 
-## Security Vulnerabilities
+### 3. Install Dependensi JavaScript
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+npm install
+```
 
-## License
+### 4. Salin File Konfigurasi
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+cp .env.example .env
+```
+
+### 5. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Buat File Database
+
+```bash
+touch database/database.sqlite
+```
+
+### 7. Jalankan Migrasi Database
+
+```bash
+php artisan migrate
+```
+
+### 8. Buat Storage Link (untuk upload file)
+
+```bash
+php artisan storage:link
+```
+
+---
+
+## Konfigurasi `.env`
+
+Buka file `.env` dan sesuaikan nilai-nilai berikut:
+
+```env
+APP_NAME="Chatbot Kesehatan Ayam"
+APP_URL=http://localhost:8000
+
+# Konfigurasi AI (WAJIB diisi)
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+OPENAI_BASE_URL=https://ai.sumopod.com/v1
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+
+# Upload file sementara
+LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK=local
+```
+
+> **Cara mendapatkan API Key:**
+> - Daftar di [SumoPod](https://ai.sumopod.com) atau [OpenAI](https://platform.openai.com)
+> - Buat API Key baru
+> - Salin dan tempelkan ke `OPENAI_API_KEY`
+
+---
+
+## Menjalankan Aplikasi
+
+Anda perlu membuka **3 terminal** secara bersamaan:
+
+### Terminal 1 — Web Server
+
+```bash
+php artisan serve
+```
+
+Aplikasi dapat diakses di: **http://localhost:8000**
+
+### Terminal 2 — Frontend (Vite)
+
+```bash
+npm run dev
+```
+
+### Terminal 3 — Queue Worker (untuk proses embedding)
+
+```bash
+php artisan queue:work
+```
+
+> Queue worker diperlukan agar proses embedding dokumen berjalan di background.
+
+---
+
+## Membuat Akun Admin
+
+Jalankan perintah berikut untuk membuat akun admin pertama:
+
+```bash
+php artisan make:filament-user
+```
+
+Isi nama, email, dan password saat diminta.
+
+Panel admin dapat diakses di: **http://localhost:8000/admin**
+
+---
+
+## Cara Menggunakan Aplikasi
+
+### A. Setup Awal (Dilakukan Sekali)
+
+#### 1. Tambahkan System Prompt
+
+1. Login ke panel admin
+2. Buka menu **System Prompts**
+3. Klik **Tambah** dan isi instruksi untuk AI (misalnya: "Kamu adalah asisten kesehatan ayam yang ramah...")
+4. Aktifkan prompt dengan toggle **Is Active**
+
+#### 2. Tambahkan Referensi Penyakit & Obat (opsional)
+
+- Buka **Tipe Ayam** → tambahkan jenis-jenis ayam
+- Buka **Kategori Penyakit** → tambahkan kategori
+- Buka **Penyakit** → tambahkan daftar penyakit beserta gejala dan obatnya
+- Buka **Obat** → tambahkan daftar obat
+
+---
+
+### B. Mengelola Knowledge Base (Agar Chatbot Lebih Pintar)
+
+Knowledge Base adalah dokumen referensi yang digunakan chatbot untuk menjawab pertanyaan.
+
+#### Langkah 1 — Upload Dokumen
+
+1. Buka menu **Knowledge Base → Dokumen**
+2. Klik **Tambah Dokumen**
+3. Isi **Judul** dan **Tipe** (PDF, Manual, Jurnal, atau Web)
+4. Upload file PDF atau TXT di kolom **File Dokumen**
+5. Simpan
+
+#### Langkah 2 — Ekstrak Teks dari File
+
+1. Buka dokumen yang baru ditambahkan (klik **Lihat**)
+2. Klik tombol **Ekstrak Teks**
+3. Konfirmasi → sistem akan membaca isi file secara otomatis
+4. Teks hasil ekstraksi akan tersimpan di kolom konten dokumen
+
+> Jika file PDF berbasis gambar/scan, teks tidak bisa diekstrak otomatis. Salin teks secara manual ke kolom **Konten Dokumen**.
+
+#### Langkah 3 — Buat Chunks
+
+1. Masih di halaman detail dokumen
+2. Klik tombol **Buat Chunks**
+3. Konfirmasi → dokumen akan dipecah menjadi potongan-potongan kecil (chunks)
+
+#### Langkah 4 — Embed Chunks
+
+1. Klik tombol **Embed Chunks**
+2. Konfirmasi → proses embedding dikirim ke background queue
+3. Pastikan **Queue Worker** sedang berjalan (Terminal 3)
+4. Refresh halaman beberapa saat untuk melihat status embedding
+
+> Setelah di-embed, chatbot akan menggunakan dokumen ini sebagai referensi jawaban.
+
+---
+
+### C. Membuat Sesi Chat
+
+1. Buka menu **Sesi Chat**
+2. Klik **Tambah Sesi**
+3. Isi:
+   - **Model AI** yang digunakan (misal: `gpt-4o-mini`)
+   - **Farm/Kandang** (opsional) — kaitkan dengan kandang tertentu
+   - **Ayam** (opsional) — kaitkan dengan ayam tertentu
+4. Klik **Simpan**
+5. Sistem akan otomatis membuka **halaman chat publik**
+
+#### Berbagi Link Chat ke Pengguna/Peternak
+
+- Setelah sesi dibuat, salin URL halaman chat (format: `http://localhost:8000/chat/xxxx-xxxx-xxxx`)
+- Bagikan URL tersebut ke pengguna/peternak
+- Pengguna dapat langsung berkonsultasi tanpa perlu login
+
+---
+
+### D. Memantau Sesi Chat
+
+1. Buka menu **Sesi Chat**
+2. Klik **Lihat** pada sesi yang ingin dipantau
+3. Anda dapat melihat:
+   - Riwayat percakapan
+   - Total token yang digunakan
+   - Status sesi (Aktif / Ditutup)
+4. Klik tombol **Buka Chat (Publik)** untuk membuka halaman chat
+
+---
+
+### E. Mengelola Farm & Ayam
+
+1. Buka menu **Farm** → tambahkan kandang/peternakan
+2. Buka menu **Ayam** → tambahkan data ayam, kaitkan dengan farm
+3. Buka menu **Catatan Kesehatan** → catat kondisi kesehatan ayam
+
+---
+
+## Perintah Artisan Berguna
+
+```bash
+# Jalankan semua migrasi ulang (HATI-HATI: data akan terhapus)
+php artisan migrate:fresh
+
+# Embed chunks via CLI (alternatif dari UI)
+php artisan rag:embed                    # Embed semua chunk yang belum di-embed
+php artisan rag:embed --document=1       # Embed chunk dari dokumen ID 1
+php artisan rag:embed --chunk=5          # Embed chunk ID 5 saja
+php artisan rag:embed --force            # Re-embed semua chunk (termasuk yang sudah di-embed)
+
+# Jalankan queue secara manual satu per satu
+php artisan queue:work --once
+
+# Cek status queue
+php artisan queue:monitor
+```
+
+---
+
+## Struktur Folder Penting
+
+```
+app/
+├── Filament/Resources/     # Semua resource panel admin
+├── Http/Controllers/       # ChatController (halaman chat publik)
+├── Jobs/                   # EmbedKnowledgeChunkJob
+├── Models/                 # Semua model database
+└── Services/
+    ├── ChatService.php     # Logika utama chatbot (RAG + OpenAI)
+    └── EmbeddingService.php # Embedding & cosine similarity
+
+resources/js/
+└── Pages/Chat.jsx          # Halaman chat publik (React)
+
+database/
+├── migrations/             # Semua migrasi database
+└── database.sqlite         # File database SQLite
+```
+
+---
+
+## Troubleshooting
+
+### Error: `OPENAI_API_KEY not set`
+Pastikan file `.env` sudah diisi dengan API key yang valid dan jalankan `php artisan config:clear`.
+
+### Chat tidak merespons / timeout
+- Periksa koneksi internet
+- Pastikan API key valid dan memiliki kredit
+- Cek log error di `storage/logs/laravel.log`
+
+### Embedding tidak berjalan
+- Pastikan queue worker aktif: `php artisan queue:work`
+- Cek apakah ada failed jobs: `php artisan queue:failed`
+- Retry failed jobs: `php artisan queue:retry all`
+
+### Upload file gagal
+- Pastikan folder `storage/app/public` dapat ditulis (writable)
+- Pastikan `storage:link` sudah dijalankan
+- Periksa nilai `upload_max_filesize` di `php.ini` (minimal 20M)
+
+### Halaman kosong / error 500
+- Aktifkan debug mode: `APP_DEBUG=true` di `.env`
+- Jalankan `php artisan config:clear && php artisan cache:clear`
+- Cek log di `storage/logs/laravel.log`
+
+---
+
+## Lisensi
+
+Proyek ini dibuat untuk keperluan akademik.
