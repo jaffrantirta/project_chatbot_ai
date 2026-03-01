@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ChatSessions\Tables;
 
 use App\Enums\ChatSessionStatus;
-use App\Filament\Resources\ChatSessions\ChatSessionResource;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -119,13 +118,6 @@ class ChatSessionsTable
                     ->color('success')
                     ->url(fn ($record) => route('chat.show', $record->session_token))
                     ->openUrlInNewTab()
-                    ->visible(fn ($record) => $record->status === ChatSessionStatus::Active),
-
-                Action::make('admin_chat')
-                    ->label('Chat Admin')
-                    ->icon('heroicon-o-chat-bubble-left-right')
-                    ->color('info')
-                    ->url(fn ($record) => ChatSessionResource::getUrl('chat', ['record' => $record]))
                     ->visible(fn ($record) => $record->status === ChatSessionStatus::Active),
 
                 ViewAction::make(),

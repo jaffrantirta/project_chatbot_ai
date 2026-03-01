@@ -13,7 +13,6 @@ class CreateChatSession extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Auto-generate a session token if not provided
         if (empty($data['session_token'])) {
             $data['session_token'] = Str::uuid()->toString();
         }
@@ -23,7 +22,8 @@ class CreateChatSession extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('chat', ['record' => $this->record]);
+        // Open the public chat page directly after creating a session
+        return route('chat.show', $this->record->session_token);
     }
 
     protected function getCreatedNotification(): ?Notification
@@ -31,6 +31,6 @@ class CreateChatSession extends CreateRecord
         return Notification::make()
             ->success()
             ->title('Sesi chat berhasil dibuat')
-            ->body('Memuat antarmuka percakapan…');
+            ->body('Membuka halaman chat…');
     }
 }
