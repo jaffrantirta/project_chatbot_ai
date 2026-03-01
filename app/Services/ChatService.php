@@ -5,18 +5,18 @@ namespace App\Services;
 use App\Enums\MessageRole;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
-use App\Models\KnowledgeChunk;
 use App\Models\SystemPrompt;
-use Illuminate\Support\Str;
 use OpenAI\Client;
 
 class ChatService
 {
     private Client $client;
+    private EmbeddingService $embedding;
 
-    public function __construct()
+    public function __construct(EmbeddingService $embedding)
     {
-        $this->client = \OpenAI::factory()
+        $this->embedding = $embedding;
+        $this->client    = \OpenAI::factory()
             ->withApiKey(config('services.openai.key'))
             ->withBaseUri(config('services.openai.base_url'))
             ->make();
@@ -35,7 +35,7 @@ class ChatService
             'content'    => $userContent,
         ]);
 
-        // 2. Retrieve relevant knowledge chunks (keyword-based RAG)
+        // 2. Retrieve relevant knowledge chunks via vector similarity (RAG)
         $chunks = $this->retrieveChunks($userContent);
 
         // 3. Build the full messages payload for OpenAI
@@ -71,27 +71,12 @@ class ChatService
     // ─── Private helpers ──────────────────────────────────────────────────────
 
     /**
-     * Simple keyword-based retrieval until a vector DB is in place.
-     * Returns up to 3 embedded chunks whose content matches any keyword.
+     * Vector-similarity retrieval: embed the query then rank stored chunks.
+     * Falls back to an empty collection if no chunks are embedded yet.
      */
     private function retrieveChunks(string $query): \Illuminate\Database\Eloquent\Collection
     {
-        $keywords = collect(explode(' ', strtolower($query)))
-            ->map(fn ($w) => preg_replace('/[^a-z0-9]/', '', $w))
-            ->filter(fn ($w) => strlen($w) > 3)
-            ->unique()
-            ->take(6);
-
-        if ($keywords->isEmpty()) {
-            return KnowledgeChunk::whereNull('id')->get();
-        }
-
-        $q = KnowledgeChunk::where('is_embedded', true);
-        foreach ($keywords as $keyword) {
-            $q->orWhere('content', 'like', "%{$keyword}%");
-        }
-
-        return $q->limit(3)->get();
+        return $this->embedding->findSimilarChunks($query, topK: 3);
     }
 
     /**

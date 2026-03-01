@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\KnowledgeBaseDocuments\Schemas;
 
 use App\Enums\DocumentType;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -48,29 +49,46 @@ class KnowledgeBaseDocumentForm
                                             ->native(false)
                                             ->helperText('Pilih sesuai format sumber aslinya.'),
 
-                                        TextInput::make('file_path')
-                                            ->label('Path File')
-                                            ->placeholder('storage/documents/newcastle_2023.pdf')
-                                            ->helperText('Lokasi file di server (relatif dari storage/app/public).'),
-
                                         TextInput::make('source_url')
                                             ->label('URL Sumber')
                                             ->placeholder('https://ditjenpkh.pertanian.go.id/…')
                                             ->url()
-                                            ->suffixIcon('heroicon-m-arrow-top-right-on-square')
+                                            ->suffixIcon('heroicon-m-arrow-top-right-on-square'),
+                                    ]),
+
+                                Section::make('Upload File')
+                                    ->description('Upload PDF atau TXT — teks dapat diekstrak otomatis setelah upload')
+                                    ->icon('heroicon-o-arrow-up-tray')
+                                    ->schema([
+                                        FileUpload::make('file_path')
+                                            ->label('File Dokumen')
+                                            ->disk('public')
+                                            ->directory('documents')
+                                            ->acceptedFileTypes([
+                                                'application/pdf',
+                                                'text/plain',
+                                                'application/msword',
+                                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                            ])
+                                            ->downloadable()
+                                            ->openable()
+                                            ->helperText('PDF, TXT, DOC, DOCX. Setelah upload & simpan, gunakan tombol "Ekstrak Teks" di halaman detail.')
                                             ->columnSpanFull(),
                                     ]),
 
                                 Section::make('Konten Dokumen')
-                                    ->description('Raw text hasil parsing dokumen — digunakan sebagai bahan chunking RAG')
+                                    ->description('Teks yang akan digunakan sebagai bahan chunking RAG. Bisa diisi manual atau diekstrak otomatis dari file.')
                                     ->icon('heroicon-o-document-text')
                                     ->collapsed()
                                     ->schema([
                                         Textarea::make('content')
                                             ->label('Isi Konten')
-                                            ->placeholder("Paste hasil parsing PDF/web di sini…\n\nContoh:\nNewcastle Disease (ND) adalah penyakit virus yang sangat menular pada unggas…")
+                                            ->placeholder("Paste teks di sini, atau gunakan tombol \"Ekstrak Teks\" setelah upload file…\n\nContoh:\nNewcastle Disease (ND) adalah penyakit virus yang sangat menular pada unggas…")
                                             ->rows(18)
-                                            ->required()
+                                            ->required(fn ($get) => ! $get('file_path'))
+                                            ->helperText(fn ($get) => $get('file_path')
+                                                ? 'File sudah diupload — konten dapat diekstrak otomatis dari halaman detail.'
+                                                : 'Wajib diisi jika tidak ada file yang diupload.')
                                             ->columnSpanFull(),
                                     ]),
 

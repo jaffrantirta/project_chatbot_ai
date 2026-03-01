@@ -36,9 +36,10 @@ return [
     ],
 
     'openai' => [
-        'key'      => env('OPENAI_API_KEY'),
-        'base_url' => env('OPENAI_BASE_URL', 'https://ai.sumopod.com/v1'),
-        'model'    => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'key'             => env('OPENAI_API_KEY'),
+        'base_url'        => env('OPENAI_BASE_URL', 'https://ai.sumopod.com/v1'),
+        'model'           => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'embedding_model' => env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small'),
     ],
 
 ];

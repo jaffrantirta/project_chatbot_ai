@@ -3,10 +3,14 @@
 namespace App\Filament\Resources\KnowledgeBaseDocuments\Tables;
 
 use App\Enums\DocumentType;
+use App\Jobs\EmbedKnowledgeChunkJob;
+use App\Services\EmbeddingService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -47,7 +51,7 @@ class KnowledgeBaseDocumentsTable
                     ->wrap()
                     ->description(fn ($record): ?string => $record->source_url
                         ? str($record->source_url)->limit(60)->value()
-                        : ($record->file_path ? "📁 {$record->file_path}" : null)),
+                        : ($record->file_path ? '📎 ' . basename($record->file_path) : null)),
 
                 TextColumn::make('type')
                     ->label('Tipe')
@@ -106,6 +110,47 @@ class KnowledgeBaseDocumentsTable
             ->striped()
             ->recordActions([
                 ViewAction::make(),
+
+                Action::make('chunk')
+                    ->label('Buat Chunks')
+                    ->icon('heroicon-o-scissors')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Buat Chunks Otomatis')
+                    ->modalDescription('Chunks lama akan dihapus dan dibuat ulang dari konten dokumen.')
+                    ->action(function ($record, EmbeddingService $service) {
+                        try {
+                            $count = $service->createChunksForDocument($record);
+                            Notification::make()
+                                ->success()
+                                ->title("{$count} chunks dibuat")
+                                ->send();
+                        } catch (\RuntimeException $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Gagal membuat chunks')
+                                ->body($e->getMessage())
+                                ->send();
+                        }
+                    }),
+
+                Action::make('embed')
+                    ->label('Embed')
+                    ->icon('heroicon-o-cpu-chip')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) => $record->chunks()->where('is_embedded', false)->exists())
+                    ->action(function ($record) {
+                        $chunks = $record->chunks()->where('is_embedded', false)->get();
+                        foreach ($chunks as $chunk) {
+                            EmbedKnowledgeChunkJob::dispatch($chunk);
+                        }
+                        Notification::make()
+                            ->success()
+                            ->title("{$chunks->count()} chunk dikirim untuk embedding")
+                            ->send();
+                    }),
+
                 EditAction::make(),
             ])
             ->toolbarActions([

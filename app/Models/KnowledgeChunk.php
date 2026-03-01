@@ -14,6 +14,7 @@ class KnowledgeChunk extends Model
         'token_count',
         'embedding_id',
         'is_embedded',
+        'embedding',
         'metadata',
     ];
 
@@ -21,6 +22,7 @@ class KnowledgeChunk extends Model
     {
         return [
             'is_embedded' => 'boolean',
+            'embedding'   => 'array',
             'metadata'    => 'array',
         ];
     }

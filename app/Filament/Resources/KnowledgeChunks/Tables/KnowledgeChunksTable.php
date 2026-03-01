@@ -2,16 +2,22 @@
 
 namespace App\Filament\Resources\KnowledgeChunks\Tables;
 
+use App\Jobs\EmbedKnowledgeChunkJob;
+use App\Services\EmbeddingService;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class KnowledgeChunksTable
 {
@@ -108,10 +114,62 @@ class KnowledgeChunksTable
             ->defaultSort('chunk_index', 'asc')
             ->recordActions([
                 ViewAction::make(),
+
+                Action::make('embed')
+                    ->label('Embed')
+                    ->icon('heroicon-o-cpu-chip')
+                    ->color('success')
+                    ->visible(fn ($record) => ! $record->is_embedded)
+                    ->requiresConfirmation()
+                    ->modalHeading('Embed Chunk Ini')
+                    ->modalDescription('Chunk akan diproses melalui OpenAI Embeddings API dan hasilnya disimpan.')
+                    ->action(function ($record) {
+                        EmbedKnowledgeChunkJob::dispatch($record);
+                        Notification::make()
+                            ->success()
+                            ->title('Chunk dikirim untuk embedding')
+                            ->send();
+                    }),
+
+                Action::make('re_embed')
+                    ->label('Re-embed')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('gray')
+                    ->visible(fn ($record) => $record->is_embedded)
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update(['is_embedded' => false, 'embedding' => null]);
+                        EmbedKnowledgeChunkJob::dispatch($record);
+                        Notification::make()
+                            ->success()
+                            ->title('Chunk dijadwalkan untuk re-embed')
+                            ->send();
+                    }),
+
                 EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('embed_selected')
+                        ->label('Embed Terpilih')
+                        ->icon('heroicon-o-cpu-chip')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Embed Chunks Terpilih')
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            foreach ($records as $chunk) {
+                                if (! $chunk->is_embedded) {
+                                    EmbedKnowledgeChunkJob::dispatch($chunk);
+                                    $count++;
+                                }
+                            }
+                            Notification::make()
+                                ->success()
+                                ->title("{$count} chunk dikirim untuk embedding")
+                                ->send();
+                        }),
+
                     DeleteBulkAction::make(),
                 ]),
             ])
