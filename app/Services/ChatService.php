@@ -83,7 +83,7 @@ class ChatService
             ->take(6);
 
         if ($keywords->isEmpty()) {
-            return collect();
+            return KnowledgeChunk::whereNull('id')->get();
         }
 
         $q = KnowledgeChunk::where('is_embedded', true);

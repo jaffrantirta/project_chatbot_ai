@@ -113,12 +113,21 @@ class ChatSessionsTable
             ])
             ->defaultSort('updated_at', 'desc')
             ->recordActions([
-                Action::make('chat')
-                    ->label('Mulai Chat')
-                    ->icon('heroicon-o-chat-bubble-left-right')
+                Action::make('external_chat')
+                    ->label('Buka Chat')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
                     ->color('success')
-                    ->url(fn($record) => ChatSessionResource::getUrl('chat', ['record' => $record]))
-                    ->visible(fn($record) => $record->status === ChatSessionStatus::Active),
+                    ->url(fn ($record) => route('chat.show', $record->session_token))
+                    ->openUrlInNewTab()
+                    ->visible(fn ($record) => $record->status === ChatSessionStatus::Active),
+
+                Action::make('admin_chat')
+                    ->label('Chat Admin')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('info')
+                    ->url(fn ($record) => ChatSessionResource::getUrl('chat', ['record' => $record]))
+                    ->visible(fn ($record) => $record->status === ChatSessionStatus::Active),
+
                 ViewAction::make(),
                 EditAction::make(),
             ])
