@@ -39,7 +39,7 @@ class ChickenTypeResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        return 'info';
+        return 'danger';
     }
 
     public static function getNavigationBadgeTooltip(): ?string
