@@ -39,22 +39,6 @@ class ActivityLogResource extends Resource
         return false;
     }
 
-    public static function getNavigationBadge(): ?string
-    {
-        $today = static::getModel()::whereDate('created_at', today())->count();
-        return $today ? (string) $today : null;
-    }
-
-    public static function getNavigationBadgeColor(): ?string
-    {
-        return 'info';
-    }
-
-    public static function getNavigationBadgeTooltip(): ?string
-    {
-        return 'Log aktivitas hari ini';
-    }
-
     public static function form(Schema $schema): Schema
     {
         return ActivityLogForm::configure($schema);

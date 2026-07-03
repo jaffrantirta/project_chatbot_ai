@@ -50,7 +50,7 @@ class ChatService
             'model'       => $session->model_used ?? config('services.openai.model', 'gpt-4o-mini'),
             'messages'    => $payload,
             'max_tokens'  => 1500,
-            'temperature' => 0.7,
+            'temperature' => 0.3,
         ]);
 
         $assistantContent = $response->choices[0]->message->content ?? '';
@@ -113,7 +113,7 @@ class ChatService
         if (blank($systemContent)) {
             $systemContent =
                 "Kamu adalah asisten AI khusus monitoring kesehatan ayam.\n" .
-                "Jawablah dengan ramah, jelas, dan berbasis fakta ilmiah peternakan.\n" .
+                "Jawablah dengan ramah dan jelas, HANYA berdasarkan referensi knowledge base yang diberikan.\n" .
                 "Gunakan format Markdown (bold, bullet, heading) agar mudah dibaca.\n" .
                 "Jika tidak yakin, sarankan konsultasi dokter hewan.";
         }
@@ -133,12 +133,27 @@ class ChatService
 
         // ── RAG context ──────────────────────────────────────────────────
         if ($chunks->isNotEmpty()) {
-            $systemContent .= "\n\n---\n**Referensi knowledge base** (prioritaskan informasi ini):\n";
+            $systemContent .= "\n\n---\n**Referensi knowledge base:**\n";
             foreach ($chunks as $i => $chunk) {
                 $source = $chunk->document?->title ?? 'Dokumen';
                 $systemContent .= "\n[{$i}] *{$source}*\n{$chunk->content}\n";
             }
             $systemContent .= "\n---";
+            $systemContent .=
+                "\n\n**Aturan wajib menjawab:**\n" .
+                "1. Jawab HANYA berdasarkan referensi knowledge base di atas. Jangan menambahkan informasi dari pengetahuan umum di luar referensi.\n" .
+                "2. Jika referensi di atas TIDAK memuat jawaban atas pertanyaan pengguna, jangan menebak. " .
+                "Minta maaf dengan ramah, contohnya: \"Mohon maaf, saya belum memiliki informasi tentang hal itu di basis pengetahuan saya. " .
+                "Silakan tanyakan hal lain seputar kesehatan ayam, atau konsultasikan dengan dokter hewan ya 🙏\"\n" .
+                "3. Sapaan atau basa-basi ringan (halo, terima kasih, dll.) boleh dibalas dengan ramah tanpa referensi.";
+        } else {
+            $systemContent .=
+                "\n\n**Aturan wajib menjawab:**\n" .
+                "Tidak ditemukan referensi knowledge base yang relevan dengan pesan pengguna.\n" .
+                "1. Jika pesan pengguna hanya sapaan atau basa-basi ringan (halo, terima kasih, dll.), balas dengan ramah dan tawarkan bantuan seputar kesehatan ayam.\n" .
+                "2. Selain itu, JANGAN menjawab dari pengetahuan umum. Minta maaf dengan ramah bahwa informasi tersebut belum tersedia, contohnya: " .
+                "\"Mohon maaf, saya belum memiliki informasi tentang hal itu di basis pengetahuan saya. " .
+                "Silakan tanyakan hal lain seputar kesehatan ayam, atau konsultasikan dengan dokter hewan ya 🙏\"";
         }
 
         // ── Conversation history ─────────────────────────────────────────

@@ -22,26 +22,26 @@ class ActivityLogsTable
                 TextColumn::make('action')
                     ->label('Aksi')
                     ->badge()
-                    ->color(fn (string $value): string => match (true) {
-                        str_contains(strtolower($value), 'login')    => 'info',
-                        str_contains(strtolower($value), 'logout')   => 'gray',
-                        str_contains(strtolower($value), 'create')   => 'success',
-                        str_contains(strtolower($value), 'update')   => 'warning',
-                        str_contains(strtolower($value), 'edit')     => 'warning',
-                        str_contains(strtolower($value), 'delete')   => 'danger',
-                        str_contains(strtolower($value), 'destroy')  => 'danger',
-                        str_contains(strtolower($value), 'restore')  => 'purple',
+                    ->color(fn (string $state): string => match (true) {
+                        str_contains(strtolower($state), 'login')    => 'info',
+                        str_contains(strtolower($state), 'logout')   => 'gray',
+                        str_contains(strtolower($state), 'create')   => 'success',
+                        str_contains(strtolower($state), 'update')   => 'warning',
+                        str_contains(strtolower($state), 'edit')     => 'warning',
+                        str_contains(strtolower($state), 'delete')   => 'danger',
+                        str_contains(strtolower($state), 'destroy')  => 'danger',
+                        str_contains(strtolower($state), 'restore')  => 'purple',
                         default                                       => 'gray',
                     })
-                    ->icon(fn (string $value): string => match (true) {
-                        str_contains(strtolower($value), 'login')    => 'heroicon-o-arrow-right-on-rectangle',
-                        str_contains(strtolower($value), 'logout')   => 'heroicon-o-arrow-left-on-rectangle',
-                        str_contains(strtolower($value), 'create')   => 'heroicon-o-plus-circle',
-                        str_contains(strtolower($value), 'update')   => 'heroicon-o-pencil-square',
-                        str_contains(strtolower($value), 'edit')     => 'heroicon-o-pencil-square',
-                        str_contains(strtolower($value), 'delete')   => 'heroicon-o-trash',
-                        str_contains(strtolower($value), 'destroy')  => 'heroicon-o-trash',
-                        str_contains(strtolower($value), 'restore')  => 'heroicon-o-arrow-uturn-left',
+                    ->icon(fn (string $state): string => match (true) {
+                        str_contains(strtolower($state), 'login')    => 'heroicon-o-arrow-right-on-rectangle',
+                        str_contains(strtolower($state), 'logout')   => 'heroicon-o-arrow-left-on-rectangle',
+                        str_contains(strtolower($state), 'create')   => 'heroicon-o-plus-circle',
+                        str_contains(strtolower($state), 'update')   => 'heroicon-o-pencil-square',
+                        str_contains(strtolower($state), 'edit')     => 'heroicon-o-pencil-square',
+                        str_contains(strtolower($state), 'delete')   => 'heroicon-o-trash',
+                        str_contains(strtolower($state), 'destroy')  => 'heroicon-o-trash',
+                        str_contains(strtolower($state), 'restore')  => 'heroicon-o-arrow-uturn-left',
                         default                                       => 'heroicon-o-bolt',
                     })
                     ->searchable()

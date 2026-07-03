@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ChatSessionStatus;
+use App\Models\ActivityLog;
 use App\Models\ChatSession;
 use App\Services\ChatService;
 use Illuminate\Http\Request;
@@ -68,6 +69,17 @@ class ChatController extends Controller
         $assistantMessage = app(ChatService::class)->sendMessage(
             $session,
             $request->input('message')
+        );
+
+        ActivityLog::record(
+            action: 'chat_message',
+            subject: $session,
+            description: 'Pesan baru pada sesi chat "' . ($session->title ?? $session->session_token) . '"',
+            metadata: [
+                'tokens_used' => $assistantMessage->tokens_used,
+                'farm'        => $session->farm?->name,
+                'chicken'     => $session->chicken?->code,
+            ],
         );
 
         return response()->json([
