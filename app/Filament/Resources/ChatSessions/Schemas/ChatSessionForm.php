@@ -45,11 +45,11 @@ class ChatSessionForm
 
                                         TextInput::make('model_used')
                                             ->label('Model AI')
-                                            ->default('gpt-4o-mini')
+                                            ->default(fn () => config('services.openai.model', 'openai/gpt-4o-mini'))
                                             ->required()
                                             ->maxLength(100)
                                             ->prefixIcon('heroicon-o-cpu-chip')
-                                            ->helperText('Nama model OpenAI, e.g. gpt-4o, gpt-4o-mini.'),
+                                            ->helperText('ID model TokenRouter, e.g. openai/gpt-4o-mini, anthropic/claude-haiku-4.5.'),
                                     ]),
 
                                 Section::make('Konteks Peternakan')

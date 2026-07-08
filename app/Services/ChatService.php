@@ -47,7 +47,7 @@ class ChatService
 
         // 4. Call the AI
         $response = $this->client->chat()->create([
-            'model'       => $session->model_used ?? config('services.openai.model', 'gpt-4o-mini'),
+            'model'       => $session->model_used ?? config('services.openai.model', 'openai/gpt-4o-mini'),
             'messages'    => $payload,
             'max_tokens'  => 1500,
             'temperature' => 0.3,

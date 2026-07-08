@@ -98,20 +98,25 @@ Buka file `.env` dan sesuaikan nilai-nilai berikut:
 APP_NAME="Chatbot Kesehatan Ayam"
 APP_URL=http://localhost:8000
 
-# Konfigurasi AI (WAJIB diisi)
+# Konfigurasi AI Chat (WAJIB diisi) — TokenRouter
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
-OPENAI_BASE_URL=https://ai.sumopod.com/v1
-OPENAI_MODEL=gpt-4o-mini
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_BASE_URL=https://api.tokenrouter.com/v1
+OPENAI_MODEL=openai/gpt-4o-mini
+
+# Konfigurasi Embeddings (WAJIB untuk fitur RAG) — TokenRouter tidak punya model embedding,
+# gunakan Google Gemini (API key gratis: https://aistudio.google.com/apikey)
+EMBEDDING_API_KEY=xxxxxxxxxxxxxxxxxxxx
+EMBEDDING_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+OPENAI_EMBEDDING_MODEL=gemini-embedding-001
 
 # Upload file sementara
 LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK=local
 ```
 
 > **Cara mendapatkan API Key:**
-> - Daftar di [SumoPod](https://ai.sumopod.com) atau [OpenAI](https://platform.openai.com)
-> - Buat API Key baru
-> - Salin dan tempelkan ke `OPENAI_API_KEY`
+> - Chat: daftar di [TokenRouter](https://www.tokenrouter.com), buat API Key, tempelkan ke `OPENAI_API_KEY`
+> - Embeddings: buat API Key gratis di [Google AI Studio](https://aistudio.google.com/apikey), tempelkan ke `EMBEDDING_API_KEY`
+> - Setelah ganti model embedding, jalankan `php artisan rag:embed --force` untuk re-embed semua chunk
 
 ---
 

@@ -31,12 +31,12 @@ class EmbeddingService
     public function getEmbedding(string $text): array
     {
         $client = \OpenAI::factory()
-            ->withApiKey(config('services.openai.key'))
-            ->withBaseUri(config('services.openai.base_url'))
+            ->withApiKey(config('services.embedding.key'))
+            ->withBaseUri(config('services.embedding.base_url'))
             ->make();
 
         $response = $client->embeddings()->create([
-            'model' => config('services.openai.embedding_model', 'text-embedding-3-small'),
+            'model' => config('services.embedding.model', 'gemini-embedding-001'),
             'input' => mb_substr($text, 0, 8000), // safety: never exceed API limit
         ]);
 

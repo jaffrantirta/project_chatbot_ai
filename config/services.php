@@ -36,10 +36,17 @@ return [
     ],
 
     'openai' => [
-        'key'             => env('OPENAI_API_KEY'),
-        'base_url'        => env('OPENAI_BASE_URL', 'https://ai.sumopod.com/v1'),
-        'model'           => env('OPENAI_MODEL', 'gpt-4o-mini'),
-        'embedding_model' => env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small'),
+        'key'      => env('OPENAI_API_KEY'),
+        'base_url' => env('OPENAI_BASE_URL', 'https://api.tokenrouter.com/v1'),
+        'model'    => env('OPENAI_MODEL', 'openai/gpt-4o-mini'),
+    ],
+
+    // TokenRouter serves no embedding models, so embeddings use a separate
+    // OpenAI-compatible provider (default: Google Gemini's compatibility endpoint).
+    'embedding' => [
+        'key'      => env('EMBEDDING_API_KEY', env('OPENAI_API_KEY')),
+        'base_url' => env('EMBEDDING_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta/openai'),
+        'model'    => env('OPENAI_EMBEDDING_MODEL', 'gemini-embedding-001'),
     ],
 
 ];
